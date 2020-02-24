@@ -1,0 +1,68 @@
+1. Просмотреть содержимое директорий /etc, /proc, /home. Посмотреть пару произвольных файлов в /etc.
+	Просмотр содержимого директории /etc, /proc, /home:
+		ls -la /etc
+		ls -la /proc
+		ls -la /home
+	Просмотр файлов:
+		cat /etc/gai.conf
+		cat /etc/updatedb.conf
+	
+2. Выяснить, для чего предназначена команда cat. Используя данную команду, создайте два файла с данными, 
+а затем объедините их в один. Просмотрите содержимое созданного файла. Переименуйте файл, 
+дав ему новое имя.
+		man cat
+		cat > file1.txt
+	- Далее вводим: Hello
+		cat > file2.txt
+	- вводим: world
+	- объеденяем файлы в один:
+		cat file1.txt file2.txt > file3.txt
+		cat file3.txt
+		mv file3.txt result.txt
+3. Создать несколько файлов. Создайте директорию, переместите файл туда. Удалите все созданные 
+в этом и предыдущем задании директории и файлы.
+	touch file01
+	touch file02
+	mkdir lesson02
+	mv file0* lesson02
+	rm -r file*.txt lesson02 result.txt
+4. В ОС Linux скрытыми файлами считаются те, имена которых начинаются с символа “.”. 
+Сколько скрытых файлов в вашем домашнем каталоге? (Использовать конвейер. 
+Подсказка: для подсчета количества строк можно использовать wc).
+	sudo find . -type f -name ".*" | wc -l
+		Получаем количество равным 15.
+5. Попробовать вывести с помощью cat все файлы в директории /etc. Направить ошибки 
+в отдельный файл в вашей домашней директории. Сколько файлов, которые не удалось посмотреть, 
+оказалось в списке?
+	cat /etc/* 2> ~/err.txt
+	wc -l < ~/err.txt
+		Файлы которые не удалось посмотреть 127.
+6. Запустить в одном терминале программу, в другом терминале посмотреть PID процесса 
+и остановить с помощью kill, посылая разные типы сигналов. Что происходит?
+	В первом терминале пишем: firefox
+	После запуска Firefox'a в другом терминале с помощью команды top смотрим PID процесса firefox и:
+	kill -9 1780
+	firefox закрылся. Сообщение в первом терминале:
+		Exiting due to channel error.
+		[GFX1-]: Receive IPC close with reason=AbnormalShutdown
+		Exiting due to channel error.
+		Exiting due to channel error.
+		Killed
+	
+	kill -15 1956
+	firefox закрылся. Сообщение в первом терминале:
+	Exiting due to channel error.
+	[GFX1-]: Receive IPC close with reason=AbnormalShutdown
+	Exiting due to channel error.
+	Exiting due to channel error.
+	Terminated
+
+	kill -1 2147
+	firefox закрылся. Сообщение в первом терминале:
+	[GFX1-]: Receive IPC close with reason=AbnormalShutdown
+	Exiting due to channel error.
+	[GFX1-]: Receive IPC close with reason=AbnormalShutdown
+	Exiting due to channel error.
+	[GFX1-]: Receive IPC close with reason=AbnormalShutdown
+	Exiting due to channel error.
+	Hangup
