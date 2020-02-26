@@ -1,0 +1,108 @@
+1. Создать файл file1 и наполнить его произвольным содержимым. Скопировать его в file2. 
+Создать символическую ссылку file3 на file1. Создать жесткую ссылку file4 на file1. 
+Посмотреть, какие айноды у файлов. Удалить file1. Что стало с остальными созданными файлами? 
+Попробовать вывести их на экран.
+	Создаем файл file1:
+		echo Hello > file1
+	Копируем его в file2:
+		cp file1 file2
+	Создаем символическую ссылку file3 на file1:
+		ln -s file1 file3
+	Создаем жесткую ссылку file4 на file1:
+		ln file1 file4
+		ls -li
+total 12
+1204912 -rw-r--r-- 2 ostryakov ostryakov 6 фев 25 21:52 file1
+1204914 -rw-r--r-- 1 ostryakov ostryakov 6 фев 25 21:53 file2
+1180264 lrwxrwxrwx 1 ostryakov ostryakov 5 фев 25 21:57 file3 -> file1
+1204912 -rw-r--r-- 2 ostryakov ostryakov 6 фев 25 21:52 file4
+	Айноды равны у file1 и у file4, остальные имеют свои айноды.
+	Удаляем file1:
+		rm file1
+	И пытаемся вывести на экран остальные файлы:
+		cat file2
+		Hello
+		
+		cat file3
+		cat: file3: No such file or directory
+
+		cat file4
+		Hello
+	Перестала работать только символическая ссылка т.к. файл оригинал удален.
+
+2. Дать созданным файлам другие, произвольные имена. Создать новую символическую ссылку. 
+Переместить ссылки в другую директорию.
+	Переименовываем созданные файлы и создаем новые ссылки:
+		mv file2 file002
+		mv file4 file004
+		rm file3
+		ln -s file002 file003
+		ln file002 file001
+		ls -li
+		total 16
+		1204914 -rw-r--r-- 2 ostryakov ostryakov    6 фев 25 21:53 file001
+		1204914 -rw-r--r-- 2 ostryakov ostryakov    6 фев 25 21:53 file002
+		1180264 lrwxrwxrwx 1 ostryakov ostryakov    7 фев 25 22:21 file003 -> file002
+		1204912 -rw-r--r-- 1 ostryakov ostryakov    6 фев 25 21:52 file004
+	Перемещаем ссылки в другую директорию:
+		mkdir test
+		mv file001 file003 test/
+		cat test/file001
+		Hello
+		
+		cat test/file003
+		cat: test/file003: No such file or directory
+3. Создать два произвольных файла. Первому присвоить права на чтение, 
+запись для владельца и группы, только на чтение для всех. Второму присвоить права на чтение, 
+запись только для владельца. Сделать это в численном и символьном виде.
+	touch file1
+	touch file2
+	ls -li
+	total 0
+	1180264 -rw-r--r-- 1 ostryakov ostryakov 0 фев 25 22:35 file1
+	1204912 -rw-r--r-- 1 ostryakov ostryakov 0 фев 25 22:35 file2
+	
+	В символьном виде:
+	chmod ug=rw,o=r file1
+	ls -li
+	total 0
+	1180264 -rw-rw-r-- 1 ostryakov ostryakov 0 фев 25 22:35 file1
+	1204912 -rw-r--r-- 1 ostryakov ostryakov 0 фев 25 22:35 file2
+
+	chmod go-r file2
+	ls -li
+	total 0
+	1180264 -rw-rw-r-- 1 ostryakov ostryakov 0 фев 25 22:35 file1
+	1204912 -rw------- 1 ostryakov ostryakov 0 фев 25 22:35 file2
+
+	В численном виде:
+	chmod 664 file1
+	chmod 600 file2
+
+4. Создать пользователя, обладающего возможностью выполнять действия от имени суперпользователя.
+	Создаем нового пользователя lesson03:
+		sudo adduser lesson03
+		[sudo] password for ostryakov: 
+		Adding user `lesson03' ...
+		Adding new group `lesson03' (1001) ...
+		Adding new user `lesson03' (1001) with group `lesson03' ...
+		Creating home directory `/home/lesson03' ...
+		Copying files from `/etc/skel' ...
+		Enter new UNIX password: 
+		Retype new UNIX password: 
+		passwd: password updated successfully
+		Changing the user information for lesson03
+		Enter the new value, or press ENTER for the default
+			Full Name []: 
+			Room Number []: 
+			Work Phone []: 
+			Home Phone []: 
+			Other []: 
+		Is the information correct? [Y/n] y
+	Проверяем в каких группах состоит пользователь lesson03:
+		id lesson03
+		uid=1001(lesson03) gid=1001(lesson03) groups=1001(lesson03)
+	Добавляем в группу sudo:
+		sudo usermod -aG sudo lesson03
+		id lesson03
+		uid=1001(lesson03) gid=1001(lesson03) groups=1001(lesson03),27(sudo)
