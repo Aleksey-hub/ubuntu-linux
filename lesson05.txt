@@ -1,0 +1,100 @@
+1. Написать скрипт, который удаляет из текстового файла пустые строки и заменяет маленькие 
+символы на большие (воспользуйтесь tr или sed). Скрипт должен выводить информацию о том, 
+как его использовать.
+	#!/bin/bash
+
+	[ $# -lt 1 ]&&{
+        	echo Должен быть хотя бы один параметр
+        	echo Формат использования:
+        	echo $0 'arg1(имя файла)'
+        	exit 1
+	}
+
+	sed -Ei '/^$/d' $1
+	tr '[a-z]' '[A-Z]' < $1 > buf
+	cat buf > $1
+	rm buf
+
+2. Определеить, какие ошибки записывается в /var/log/auth.log при попытке неудачной аутентификации 
+пользователя для ssh подключения, для подключения через терминал - ctrl+alt+f3 и для подключения 
+с помощью виртуального терминала (gui приложения). Сделать скрипт мониторинга лога /var/log/auth.log 
+на наличие этих событий, который выводит сообщения о попытке неудачной аутентификации на экран. 
+Проверить скрипт, выполнив ошибочную регистрацию с терминала, с помощью виртуального терминала 
+и через ssh. Скрипт должен выводить информацию о том, как его использовать.
+	Ошибки в /var/log/auth.log:
+		Mar  4 23:15:21 ostryakov-ubuntu login[4256]: pam_unix(login:auth): authentication failure; logname=LOGIN uid=0 euid=0 tty=/dev/tty3 ruser= rhost=  user=ostryakov
+		Mar  4 23:15:25 ostryakov-ubuntu login[4256]: FAILED LOGIN (1) on '/dev/tty3' FOR 'ostryakov', Authentication failure
+
+		Mar  4 23:35:56 ostryakov-ubuntu gdm-password]: gkr-pam: unlocked login keyring
+		Mar  4 23:36:10 ostryakov-ubuntu login[4288]: pam_unix(login:auth): check pass; user unknown
+		Mar  4 23:36:10 ostryakov-ubuntu login[4288]: pam_unix(login:auth): authentication failure; logname=LOGIN uid=0 euid=0 tty=/dev/tty3 ruser= rhost=
+		Mar  4 23:36:12 ostryakov-ubuntu login[4288]: FAILED LOGIN (1) on '/dev/tty3' FOR 'UNKNOWN', Authentication failure
+	Через ssh:
+		Mar  4 23:45:06 ostryakov-ubuntu sshd[5462]: Invalid user ostrakov from 192.168.1.101 port 63716
+		Mar  4 23:45:12 ostryakov-ubuntu sshd[5462]: pam_unix(sshd:auth): check pass; user unknown
+		Mar  4 23:45:12 ostryakov-ubuntu sshd[5462]: pam_unix(sshd:auth): authentication failure; logname= uid=0 euid=0 tty=ssh ruser= rhost=192.168.1.101
+		Mar  4 23:45:14 ostryakov-ubuntu sshd[5462]: Failed password for invalid user ostrakov from 192.168.1.101 port 63716 ssh2
+
+		Mar  4 23:49:29 ostryakov-ubuntu sshd[5544]: pam_unix(sshd:auth): authentication failure; logname= uid=0 euid=0 tty=ssh ruser= rhost=192.168.1.101  user=ostryakov
+		Mar  4 23:49:30 ostryakov-ubuntu sshd[5544]: Failed password for ostryakov from 192.168.1.101 port 63812 ssh2
+	Через GUI:
+		Mar  5 01:26:08 ostryakov-ubuntu gdm-password]: pam_unix(gdm-password:auth): authentication failure; logname= uid=0 euid=0 tty=/dev/tty2 ruser= rhost=  user=ostryakov
+		Mar  5 01:26:12 ostryakov-ubuntu gdm-password]: pam_unix(gdm-password:auth): authentication failure; logname= uid=0 euid=0 tty=/dev/tty2 ruser= rhost=  user=ostryakov
+
+	Скрипт:
+		#!/bin/bash
+
+		echo 'Отслеживание ошибок подключения(для выхода нажмите Ctrl+C):'
+		tail -f /var/log/auth.log | sed -En '/(authentication failure)|(FAILED LOGIN)|(Failed password for)/p'
+
+3. Написать скрипт, который в указанной с помощью параметра -d директории создает указанные файлы. Если файлы уже существуют, 
+то выводится предупреждения на экран. Если указано несколько директорий, то выводится ошибка с соответствуюзей информацией. 
+Созданным файлам, которые имеют разрешения '.sh' нужно дать права на выполнения. Скрипт должен выводить информацию о том, 
+как его использовать и понятные сообщения об ошибках. Примеры запуска:
+	
+./script.sh -d /tmp/task_3
+./script.sh -d file1 file2 file3
+./script.sh -d /tmp/task_3 file1 file2.sh file3
+./script.sh -d /tmp/task_3 -d /tmp/task_3_2 file1 file2.sh file3
+
+	#!/bin/bash
+
+	if [ $# -lt 3 ];then
+        	echo Количество аргументов должно быть не меньше 2.
+        	echo Формат использования:
+        	echo 'lesson5_3.sh -d arg1(Имя папки) arg2(Имя файла) ... argN(Имя файла)'
+        	exit 1
+	fi
+
+	if [ $1 = -d ];then
+        	shift
+        	if [ -d "$1" ];then
+                	cd $1
+                	shift
+                	for i in $*
+                	do
+                        	if [ -d $i ]||[[ $i == *"-"* ]]||[[ $i == *"^"* ]]||[[ $i == *"@"* ]]||[[ $i == *"%"* ]]||[[ $i == *"#"* ]]||[[ $i == *"$"* ]];then
+                                	echo 'Второй и(или) последующие аргументы введены не корректно'
+                                	exit 1
+                        	fi
+                	done
+                	touch $*
+
+        	else
+                	echo Первый аргумент должен быть директорией.
+                	echo Указанная директория должна существовать.
+                	echo Формат использования:
+                	echo Folder или ./Folder
+                	exit 1
+        	fi
+	else
+        	echo Неверно указан параметр.
+       	 	echo Необходим параметр -d.
+	fi
+
+	for i in $*
+	do
+        	if [[ $i == *".sh"* ]];then
+                	chmod ugo+x $i
+        	fi
+	done
